@@ -15,6 +15,7 @@
  */
 package io.helidon.dbclient.mongodb;
 
+import com.mongodb.client.ClientSession;
 import io.helidon.dbclient.DbClientContext;
 import io.helidon.dbclient.DbExecuteBase;
 import io.helidon.dbclient.DbExecuteContext;
@@ -35,40 +36,54 @@ import static io.helidon.dbclient.DbStatementType.UPDATE;
 public class MongoDbExecute extends DbExecuteBase {
 
     private final MongoDatabase db;
+    private final ClientSession session;
 
     MongoDbExecute(DbClientContext ctx, MongoDatabase db) {
+        this(ctx, db, null);
+    }
+
+    MongoDbExecute(DbClientContext ctx, MongoDatabase db, ClientSession session) {
         super(ctx);
         this.db = db;
+        this.session = session;
+    }
+
+    protected MongoDatabase db() {
+        return db;
+    }
+
+    protected ClientSession session() {
+        return session;
     }
 
     @Override
     public DbStatementQuery createNamedQuery(String name, String stmt) {
-        return new MongoDbStatementQuery(db, DbExecuteContext.create(name, stmt, context()));
+        return new MongoDbStatementQuery(db, session, DbExecuteContext.create(name, stmt, context()));
     }
 
     @Override
     public DbStatementGet createNamedGet(String name, String stmt) {
-        return new MongoDbStatementGet(db, DbExecuteContext.create(name, stmt, context()));
+        return new MongoDbStatementGet(db, session, DbExecuteContext.create(name, stmt, context()));
     }
 
     @Override
     public DbStatementDml createNamedDmlStatement(String name, String stmt) {
-        return new MongoDbStatementDml(db, DML, DbExecuteContext.create(name, stmt, context()));
+        return new MongoDbStatementDml(db, session, DML, DbExecuteContext.create(name, stmt, context()));
     }
 
     @Override
     public DbStatementDml createNamedInsert(String name, String stmt) {
-        return new MongoDbStatementDml(db, INSERT, DbExecuteContext.create(name, stmt, context()));
+        return new MongoDbStatementDml(db, session, INSERT, DbExecuteContext.create(name, stmt, context()));
     }
 
     @Override
     public DbStatementDml createNamedUpdate(String name, String stmt) {
-        return new MongoDbStatementDml(db, UPDATE, DbExecuteContext.create(name, stmt, context()));
+        return new MongoDbStatementDml(db, session, UPDATE, DbExecuteContext.create(name, stmt, context()));
     }
 
     @Override
     public DbStatementDml createNamedDelete(String name, String stmt) {
-        return new MongoDbStatementDml(db, DELETE, DbExecuteContext.create(name, stmt, context()));
+        return new MongoDbStatementDml(db, session, DELETE, DbExecuteContext.create(name, stmt, context()));
     }
 
     @Override

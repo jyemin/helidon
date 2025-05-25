@@ -102,7 +102,7 @@ public class MongoDbClient extends DbClientBase implements DbClient {
 
     @Override
     public DbTransaction transaction() {
-        throw new UnsupportedOperationException("Transactions are not supported");
+        return new MongoDbTransaction(context(), client, db);
     }
 
     @Override

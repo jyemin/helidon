@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.mongodb.client.ClientSession;
 import io.helidon.dbclient.DbClientServiceContext;
 import io.helidon.dbclient.DbExecuteContext;
 import io.helidon.dbclient.DbIndexedStatementParameters;
@@ -76,6 +77,7 @@ abstract class MongoDbStatement<S extends DbStatement<S>> extends DbStatementBas
     protected static final String JSON_PROJECTION = "projection";
 
     private final MongoDatabase db;
+    private final ClientSession session;
 
     /**
      * Create a new instance.
@@ -86,6 +88,13 @@ abstract class MongoDbStatement<S extends DbStatement<S>> extends DbStatementBas
     MongoDbStatement(MongoDatabase db, DbExecuteContext context) {
         super(context);
         this.db = db;
+        this.session = null;
+    }
+
+    public MongoDbStatement(MongoDatabase db, ClientSession session, DbExecuteContext context) {
+        super(context);
+        this.db = db;
+        this.session = session;
     }
 
     /**
@@ -95,6 +104,15 @@ abstract class MongoDbStatement<S extends DbStatement<S>> extends DbStatementBas
      */
     MongoDatabase db() {
         return db;
+    }
+
+    /**
+     * Get the mongo session instance.
+     *
+     * @return ClientSession, which may be null
+     */
+    ClientSession session() {
+        return session;
     }
 
     /**

@@ -21,6 +21,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.mongodb.client.ClientSession;
 import io.helidon.dbclient.DbClientException;
 import io.helidon.dbclient.DbExecuteContext;
 import io.helidon.dbclient.DbRow;
@@ -46,10 +47,12 @@ public class MongoDbStatementQuery extends MongoDbStatement<DbStatementQuery> im
      * Create a new instance.
      *
      * @param db      MongoDb instance
+     * @param session MongoDb session instance
      * @param context context
+     *
      */
-    MongoDbStatementQuery(MongoDatabase db, DbExecuteContext context) {
-        super(db, context);
+    MongoDbStatementQuery(MongoDatabase db, ClientSession session, DbExecuteContext context) {
+        super(db, session, context);
     }
 
     @Override
@@ -92,7 +95,7 @@ public class MongoDbStatementQuery extends MongoDbStatement<DbStatementQuery> im
     private Stream<DbRow> executeCommand(MongoStatement stmt, CompletableFuture<Long> future) {
         Document command = stmt.getQuery();
         LOGGER.log(Level.DEBUG, () -> String.format("Command: %s", command.toString()));
-        Document doc = db().runCommand(command);
+        Document doc = session() == null ? db().runCommand(command) : db().runCommand(session(), command);
         future.complete(1L);
         return Stream.of(new MongoDbRow(doc, context()));
     }
@@ -107,7 +110,7 @@ public class MongoDbStatementQuery extends MongoDbStatement<DbStatementQuery> im
                 query.toString(),
                 (projection != null ? projection : "N/A")));
 
-        FindIterable<Document> finder = mc.find(query);
+        FindIterable<Document> finder = session() == null ? mc.find(query) : mc.find(session(), query);
         if (projection != null) {
             finder = finder.projection(projection);
         }

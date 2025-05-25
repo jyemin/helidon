@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.mongodb.client.ClientSession;
 import io.helidon.dbclient.DbExecuteContext;
 import io.helidon.dbclient.DbRow;
 import io.helidon.dbclient.DbStatementGet;
@@ -37,11 +38,12 @@ public class MongoDbStatementGet extends MongoDbStatement<DbStatementGet> implem
      * Create a new instance.
      *
      * @param db      MongoDb instance
+     * @param session MongoDb session
      * @param context context
      */
-    MongoDbStatementGet(MongoDatabase db, DbExecuteContext context) {
-        super(db, context);
-        this.theQuery = new MongoDbStatementQuery(db, context);
+    MongoDbStatementGet(MongoDatabase db, ClientSession session, DbExecuteContext context) {
+        super(db, session, context);
+        this.theQuery = new MongoDbStatementQuery(db, session, context);
     }
 
     @Override

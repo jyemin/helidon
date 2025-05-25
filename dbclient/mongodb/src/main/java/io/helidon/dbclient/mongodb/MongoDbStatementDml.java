@@ -18,6 +18,7 @@ package io.helidon.dbclient.mongodb;
 import java.util.List;
 import java.util.stream.Stream;
 
+import com.mongodb.client.ClientSession;
 import io.helidon.dbclient.DbExecuteContext;
 import io.helidon.dbclient.DbResultDml;
 import io.helidon.dbclient.DbStatementDml;
@@ -51,10 +52,12 @@ public class MongoDbStatementDml extends MongoDbStatement<DbStatementDml> implem
      * Create a new instance.
      *
      * @param db      MongoDb instance
+     * @param session MongoDb session
+     * @param type    statement type
      * @param context context
      */
-    MongoDbStatementDml(MongoDatabase db, DbStatementType type, DbExecuteContext context) {
-        super(db, context);
+    MongoDbStatementDml(MongoDatabase db, ClientSession session, DbStatementType type, DbExecuteContext context) {
+        super(db, session, context);
         this.type = type;
     }
 
@@ -141,13 +144,19 @@ public class MongoDbStatementDml extends MongoDbStatement<DbStatementDml> implem
 
     private Long executeInsert(MongoStatement stmt) {
         MongoCollection<Document> mc = db().getCollection(stmt.getCollection());
-        mc.insertOne(stmt.getValue());
+        if (session() == null) {
+            mc.insertOne(stmt.getValue());
+        } else {
+            mc.insertOne(session(), stmt.getValue());
+        }
         return 1L;
     }
 
     private DbResultDml executeInsertAsDbResultDml(MongoStatement stmt) {
         MongoCollection<Document> mc = db().getCollection(stmt.getCollection());
-        InsertOneResult result = mc.insertOne(stmt.getValue());
+        InsertOneResult result = session() == null ?
+                mc.insertOne(stmt.getValue()) :
+                mc.insertOne(session(), stmt.getValue());
         if (returnGeneratedKeys && result.wasAcknowledged()) {
             BsonValue insertedId = result.getInsertedId();
             if (insertedId != null) {
@@ -167,14 +176,18 @@ public class MongoDbStatementDml extends MongoDbStatement<DbStatementDml> implem
     private Long executeUpdate(MongoStatement stmt) {
         MongoCollection<Document> mc = db().getCollection(stmt.getCollection());
         Document query = stmt.getQuery();
-        UpdateResult updateResult = mc.updateMany(query, stmt.getValue());
+        UpdateResult updateResult = session() == null ?
+                mc.updateMany(query, stmt.getValue()) :
+                mc.updateMany(session(), query, stmt.getValue());
         return updateResult.getModifiedCount();
     }
 
     private DbResultDml executeUpdateAsDbResultDml(MongoStatement stmt) {
         MongoCollection<Document> mc = db().getCollection(stmt.getCollection());
         Document query = stmt.getQuery();
-        UpdateResult result = mc.updateMany(query, stmt.getValue());
+        UpdateResult result = session() == null ?
+                mc.updateMany(query, stmt.getValue()) :
+                mc.updateMany(session(), query, stmt.getValue());
         if (returnGeneratedKeys && result.wasAcknowledged()) {
             BsonValue upsertedId = result.getUpsertedId();
             if (upsertedId != null) {
@@ -194,7 +207,9 @@ public class MongoDbStatementDml extends MongoDbStatement<DbStatementDml> implem
     private Long executeDelete(MongoStatement stmt) {
         MongoCollection<Document> mc = db().getCollection(stmt.getCollection());
         Document query = stmt.getQuery();
-        DeleteResult deleteResult = mc.deleteMany(query);
+        DeleteResult deleteResult = session() == null ?
+                mc.deleteMany(query):
+                mc.deleteMany(session(), query);
         return deleteResult.getDeletedCount();
     }
 
