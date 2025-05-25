@@ -127,7 +127,7 @@
         <version.lib.microprofile-tracing>3.0</version.lib.microprofile-tracing>
         <version.lib.microprofile-lra-api>2.0</version.lib.microprofile-lra-api>
         <version.lib.microstream>08.01.01-MS-GA</version.lib.microstream>
-        <version.lib.mongodb>4.10.2</version.lib.mongodb>
+        <version.lib.mongodb>5.5.0</version.lib.mongodb>
         <version.lib.mssql-jdbc>8.4.1.jre8</version.lib.mssql-jdbc>
         <version.lib.mysql-connector-j>8.2.0</version.lib.mysql-connector-j>
         <version.lib.narayana>7.0.0.Final</version.lib.narayana>
@@ -573,11 +573,6 @@
             </dependency>
 
             <!-- DB Client related -->
-            <dependency>
-                <groupId>org.mongodb</groupId>
-                <artifactId>mongodb-driver-sync</artifactId>
-                <version>${version.lib.mongodb}</version>
-            </dependency>
             <dependency>
                 <groupId>com.oracle.database.messaging</groupId>
                 <artifactId>aqapi</artifactId>
@@ -1418,6 +1413,13 @@
                 <groupId>com.fasterxml.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
                 <version>${version.lib.jackson}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.mongodb</groupId>
+                <artifactId>mongodb-driver-bom</artifactId>
+                <version>${version.lib.mongodb}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
